@@ -62,3 +62,69 @@ NAudio распространяется по собственной лиценз
 
 Укажи версию Windows, модели аудиоустройств, выбранный источник и выходы, а также точное описание проблемы. Не прикладывай логи и скриншоты с личными данными, предварительно их не проверив.
 
+---
+
+# SONORA for Windows
+
+**SONORA** routes audio from a selected Windows playback device to two different active outputs at the same time. It is designed for sharing audio on two pairs of headphones, including Bluetooth headphones already connected to Windows.
+
+> The application was implemented by **OpenAI Codex (AI assistant)** based on the repository owner's idea and requirements. The owner also tested it with their devices.
+
+## Features
+
+- Lists active Windows playback devices and lets you choose a source and two distinct outputs.
+- Copies the selected stream using WASAPI loopback capture and shared-mode playback (NAudio).
+- Includes a short test tone, independent output volume controls, and basic live level/buffer diagnostics.
+- Does not change the Windows default playback device or install a virtual audio driver.
+- The standalone Windows x64 build does not require a separate .NET Runtime installation.
+
+## Limitations
+
+- This is a small prototype tested with a limited set of devices, not a certified or extensively validated audio product. Results depend on Windows, drivers, Bluetooth adapters, codecs, and the selected devices.
+- Bluetooth devices can have different latency. SONORA does not synchronize separate headphones at sample level, so echo or an audible offset may occur.
+- The app captures one selected Windows playback endpoint, not an individual application. If a browser or player uses another output, select that endpoint in SONORA or change the app's output in the Windows volume mixer.
+- The source endpoint continues to play audio directly. If it is selected as one of the outputs, Windows keeps that direct signal while SONORA copies audio to the second output. Otherwise, the source may remain audible alongside both copies.
+- Only active Windows playback endpoints are listed. Pair and connect Bluetooth devices in Windows first; choose the stereo playback endpoint if Windows exposes multiple profiles.
+- This build targets Windows x64 only. It does not provide cross-platform support, per-application routing, microphone mixing, or a guarantee that every audio format/device combination will work.
+
+## Download and run
+
+Download `SONORA-Windows-x64.exe` from the [latest release](https://github.com/Black-Foxx3/SONORA-Windows/releases/latest) and run it. The build is self-contained and does not require a separate .NET Runtime. Windows SmartScreen may show a warning because the prototype is not digitally signed.
+
+## Quick start
+
+1. Connect both pairs of headphones or other output devices in Windows.
+2. Start SONORA and refresh the device list if needed.
+3. Under **Source**, select the endpoint currently playing the audio. For a browser, check its output in the Windows volume mixer.
+4. Select two different output devices. Streaming stays disabled until both are selected.
+5. Test the outputs, adjust their volume, and start the shared stream.
+
+## Build from source
+
+Requirements: Windows x64 and the .NET 10 SDK.
+
+```powershell
+dotnet restore TwinAudio.csproj
+dotnet build TwinAudio.csproj -c Release
+dotnet publish TwinAudio.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+```
+
+The published build is placed under `bin/Release/net10.0-windows/win-x64/publish/`. The diagnostic utility in `tools/AudioCaptureProbe` is not required by the desktop app.
+
+## Privacy
+
+The application code contains no account sign-in, analytics, telemetry, or network upload functionality. Audio capture and playback happen locally through Windows audio APIs. NuGet is used only when restoring dependencies and building the source project.
+
+Local build output, debug symbols, IDE state, and machine-specific configuration are excluded from the repository. Review a fork before making it public.
+
+## Dependencies and licensing
+
+- [.NET 10](https://dotnet.microsoft.com/)
+- [NAudio 2.2.1](https://github.com/naudio/NAudio)
+
+NAudio is distributed under its own license; see its upstream repository. No separate license has been granted for the SONORA source code yet.
+
+## Reporting an issue
+
+Include your Windows version, audio device models, selected source and outputs, and the exact symptom. Review logs and screenshots for personal information before attaching them.
+
