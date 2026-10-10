@@ -1,0 +1,27 @@
+# Build output and local paths can contain machine-specific information.
+bin/
+obj/
+**/bin/
+**/obj/
+
+# IDE and user-local files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Debug symbols and diagnostic dumps
+*.pdb
+*.dmp
+*.log
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+secrets.*
+local.settings.json
+
+
