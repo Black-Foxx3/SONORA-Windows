@@ -1,41 +1,41 @@
-# SONORA for Windows
+# SONORA для Windows
 
-**SONORA** sends audio from a selected Windows playback device to two different active output devices. It is intended for listening together on two pairs of headphones, including Bluetooth headphones already connected in Windows.
+**SONORA** передаёт звук с выбранного устройства воспроизведения Windows одновременно на два разных активных аудиовыхода. Приложение предназначено, например, для совместного прослушивания в двух парах наушников, в том числе Bluetooth-наушниках, уже подключённых к Windows.
 
-> This project was implemented with **OpenAI Codex (AI assistant)**. The project idea and requirements came from the repository owner, who also tested the application on real audio devices.
+> Реализацию приложения выполнил **OpenAI Codex (ИИ-ассистент)** по идее и требованиям владельца репозитория. Владелец также проверил работу приложения на своих устройствах.
 
-## What it does
+## Возможности
 
-- Lists active Windows audio outputs and lets you choose a capture source and two distinct destinations.
-- Copies the selected source to the chosen output devices using WASAPI loopback capture and shared-mode playback (NAudio).
-- Provides an output test tone, per-output volume controls, and basic live level/buffer diagnostics.
-- Leaves the Windows default output unchanged and does not install a virtual audio driver.
-- Includes a self-contained Windows x64 executable for users who do not want to install the .NET runtime separately.
+- Показывает активные аудиовыходы Windows и позволяет выбрать источник и два разных устройства назначения.
+- Копирует выбранный поток через WASAPI loopback capture и shared-mode playback (NAudio).
+- Включает короткий тестовый сигнал, отдельную регулировку громкости выходов и базовую диагностику уровня и буфера.
+- Не меняет устройство вывода Windows по умолчанию и не устанавливает виртуальный аудиодрайвер.
+- Готовая автономная сборка для Windows x64 не требует отдельно устанавливать .NET Runtime.
 
-## Limitations
+## Ограничения
 
-- This is a small, personally tested prototype, not a certified or extensively validated audio product. Results depend on Windows, drivers, Bluetooth adapters, codecs, and the selected devices.
-- Bluetooth devices may have different delays. SONORA does not synchronize separate headsets at sample level, so a noticeable echo or offset is possible.
-- SONORA captures one selected Windows render endpoint, not an individual app. If a browser or player sends audio to another endpoint, select that endpoint as the source in SONORA or in the Windows volume mixer.
-- The source endpoint remains audible through Windows. If it is also selected as one destination, Windows supplies that direct sound while SONORA copies to the other destination. Otherwise the source can remain audible in addition to both copies.
-- Only active Windows playback endpoints are listed. Pair and connect Bluetooth devices in Windows first; select the stereo playback endpoint when Windows exposes multiple profiles.
-- This build targets Windows x64. It does not provide multi-platform support, independent per-application routing, microphone mixing, or a guarantee that every audio format/device combination will work.
+- Это небольшой прототип, проверенный на ограниченном наборе устройств, а не сертифицированный или широко протестированный аудиопродукт. Результат зависит от версии Windows, драйверов, Bluetooth-адаптеров, кодеков и выбранных устройств.
+- У Bluetooth-устройств может различаться задержка. SONORA не синхронизирует отдельные наушники на уровне аудиосэмплов, поэтому возможны эхо или заметное смещение.
+- Приложение захватывает один выбранный аудиовыход Windows, а не звук отдельного приложения. Если браузер или плеер выводит звук на другое устройство, выбери его источником в SONORA или настрой вывод браузера в микшере громкости Windows.
+- Исходное устройство продолжает воспроизводить звук напрямую. Если оно выбрано одним из двух выходов, Windows оставляет прямой сигнал, а SONORA копирует звук на второй выход. Иначе исходный звук может звучать дополнительно к двум копиям.
+- Отображаются только активные устройства воспроизведения Windows. Сначала подключи Bluetooth-устройства в Windows; если доступны несколько профилей, выбирай стереовыход.
+- Сборка предназначена только для Windows x64. Нет многоплатформенной поддержки, отдельной маршрутизации для каждого приложения, сведения микрофона или гарантии работы с любой комбинацией форматов и устройств.
 
-## Download and run
+## Скачать и запустить
 
-Download `SONORA-Windows-x64.exe` from the latest GitHub Release and run it. The release executable is self-contained and does not require a separately installed .NET runtime. Windows SmartScreen may show a warning because the prototype is not code-signed; only run software you trust.
+Скачай `SONORA-Windows-x64.exe` из [последнего релиза](https://github.com/Black-Foxx3/SONORA-Windows/releases/latest) и запусти файл. Сборка автономная, отдельно устанавливать .NET Runtime не нужно. Windows SmartScreen может предупредить о запуске, так как прототип не подписан цифровым сертификатом.
 
-## Quick start
+## Быстрый запуск
 
-1. Pair and connect both headphones or output devices in Windows.
-2. Start SONORA and refresh the device list if needed.
-3. Choose the endpoint currently playing the audio as **Source**. For browser audio, check the browser's output in the Windows volume mixer.
-4. Select two different output devices. The app will not start until both are selected.
-5. Use **Test** to confirm the destinations, adjust their levels, then start the shared stream.
+1. Подключи обе пары наушников или других устройств вывода в Windows.
+2. Запусти SONORA и при необходимости обнови список устройств.
+3. В поле **Источник** выбери выход, через который сейчас воспроизводится нужный звук. Для браузера проверь его устройство в микшере громкости Windows.
+4. Выбери два разных устройства вывода. Пока оба выхода не выбраны, трансляцию запустить нельзя.
+5. Проверь устройства тестовым сигналом, настрой громкость и запусти общий звук.
 
-## Build from source
+## Сборка из исходников
 
-Requirements: Windows x64 and the .NET 10 SDK.
+Требования: Windows x64 и .NET 10 SDK.
 
 ```powershell
 dotnet restore TwinAudio.csproj
@@ -43,21 +43,22 @@ dotnet build TwinAudio.csproj -c Release
 dotnet publish TwinAudio.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
-The publish output is under `bin/Release/net10.0-windows/win-x64/publish/`. The diagnostic probe in `tools/AudioCaptureProbe` is not required by the desktop app.
+Опубликованная сборка появится в `bin/Release/net10.0-windows/win-x64/publish/`. Диагностическая утилита в `tools/AudioCaptureProbe` не нужна для работы приложения.
 
-## Privacy
+## Приватность
 
-The application code contains no account sign-in, analytics, telemetry, or network upload functionality. Audio capture and playback are handled locally through Windows audio APIs. NuGet is contacted only when restoring/building the source project.
+В коде приложения нет входа в аккаунт, аналитики, телеметрии или отправки данных по сети. Захват и воспроизведение звука выполняются локально через аудиоинтерфейсы Windows. NuGet используется только при восстановлении зависимостей и сборке исходников.
 
-The repository intentionally excludes local build output, debug symbols, IDE state, and machine-specific configuration. Please report any privacy concern before sharing a public fork.
+Локальные сборки, отладочные символы, настройки IDE и конфигурация конкретного компьютера исключены из репозитория. Перед публикацией публичной копии дополнительно проверь содержимое форка.
 
-## Dependencies
+## Зависимости
 
 - [.NET 10](https://dotnet.microsoft.com/)
 - [NAudio 2.2.1](https://github.com/naudio/NAudio)
 
-NAudio is distributed under its own license; see its upstream repository. This repository currently does not grant an additional license for SONORA source code.
+NAudio распространяется по собственной лицензии; см. репозиторий проекта. Для исходного кода SONORA отдельная лицензия пока не предоставлена.
 
-## Feedback
+## Сообщить о проблеме
 
-Include your Windows version, audio device models, source/destination selections, and the exact symptom when reporting a problem. Do not attach logs or screenshots containing personal information unless you have reviewed them first.
+Укажи версию Windows, модели аудиоустройств, выбранный источник и выходы, а также точное описание проблемы. Не прикладывай логи и скриншоты с личными данными, предварительно их не проверив.
+
