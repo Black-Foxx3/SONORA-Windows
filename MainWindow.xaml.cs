@@ -17,6 +17,11 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _diagnosticsTimer;
     private bool _loadingDevices;
     private bool _isRunning;
+    private bool _english;
+    private string _statusKey = "devices-none";
+    private string _detailKey = "connect-devices";
+    private string? _detailExtra;
+    private string _badgeKey = "stopped";
 
     public MainWindow()
     {
@@ -27,9 +32,52 @@ public partial class MainWindow : Window
         };
         _diagnosticsTimer.Tick += (_, _) =>
         {
-            if (_isRunning) DetailText.Text = _router.GetDiagnostics();
+            if (_isRunning) DetailText.Text = _router.GetDiagnostics(_english);
         };
         RefreshDevices();
+        ApplyLanguage();
+    }
+
+    private string Tx(string russian, string english) => _english ? english : russian;
+
+    private void LanguageButton_Click(object sender, RoutedEventArgs e)
+    {
+        _english = ReferenceEquals(sender, EnglishButton);
+        ApplyLanguage();
+    }
+
+    private void ApplyLanguage()
+    {
+        Title = Tx("SONORA | Два устройства, один звук", "SONORA | Two devices, one sound");
+        WorkspaceLabel.Text = Tx("РАБОЧЕЕ ПРОСТРАНСТВО", "WORKSPACE");
+        RoutingLabel.Text = Tx("Маршрутизация", "Routing");
+        SessionLabel.Text = Tx("СЕССИЯ", "SESSION");
+        LocalAudioLabel.Text = Tx("Локальное аудио", "Local audio");
+        LocalOnlyLabel.Text = Tx("Только на этом компьютере", "This computer only");
+        ReadyLabel.Text = Tx("СИСТЕМА ГОТОВА", "SYSTEM READY");
+        VersionLabel.Text = "v0.2.0  ·  Windows WASAPI";
+        HeaderEyebrow.Text = Tx("АУДИОСЕССИЯ  /  01", "AUDIO SESSION  /  01");
+        HeaderTitle.Text = Tx("Два устройства. Один звук.", "Two devices. One sound.");
+        HeaderSubtitle.Text = Tx("Передавай системный звук сразу на две пары наушников.", "Send system audio to two pairs of headphones at once.");
+        SourceSectionLabel.Text = Tx("01  ИСТОЧНИК ЗВУКА", "01  AUDIO SOURCE");
+        RefreshButton.ToolTip = Tx("Обновить список устройств", "Refresh device list");
+        OutputsSectionLabel.Text = Tx("02  УСТРОЙСТВА ВЫВОДА", "02  OUTPUT DEVICES");
+        ListenerALabel.Text = Tx("СЛУШАТЕЛЬ 1", "LISTENER 1");
+        ListenerBLabel.Text = Tx("СЛУШАТЕЛЬ 2", "LISTENER 2");
+        LatencyNote.Text = Tx(
+            "Bluetooth-наушники могут иметь разную аппаратную задержку. Приложение передаёт общий поток, но не может гарантировать идеальное совпадение сигнала между разными моделями.",
+            "Bluetooth headphones can have different hardware latency. SONORA sends the same stream but cannot guarantee perfect synchronization between different models.");
+        TestButton.Content = Tx("♫   Проверить", "♫   Test outputs");
+        RussianButton.Background = _english ? Brushes.White : new SolidColorBrush(Color.FromRgb(23, 35, 38));
+        RussianButton.Foreground = _english ? new SolidColorBrush(Color.FromRgb(67, 82, 85)) : Brushes.White;
+        EnglishButton.Background = _english ? new SolidColorBrush(Color.FromRgb(23, 35, 38)) : Brushes.White;
+        EnglishButton.Foreground = _english ? Brushes.White : new SolidColorBrush(Color.FromRgb(67, 82, 85));
+        SetStatus(_isRunning, _badgeKey);
+        SourceHint.Text = SourceCombo.SelectedItem is AudioEndpoint source
+            ? SourceHintFor(source)
+            : Tx("Будет захвачен звук, который Windows воспроизводит через выбранное устройство.", "SONORA captures audio played by Windows through the selected device.");
+        UpdateControls();
+        RenderStatus();
     }
 
     private void RefreshDevices()
@@ -55,18 +103,20 @@ public partial class MainWindow : Window
             OutputBCombo.SelectedItem = items.FirstOrDefault(x => x.Id == secondId && x.Id != (OutputACombo.SelectedItem as AudioEndpoint)?.Id)
                 ?? items.FirstOrDefault(x => x.Id != (OutputACombo.SelectedItem as AudioEndpoint)?.Id);
 
-            StatusText.Text = items.Count switch
+            _statusKey = items.Count switch
             {
-                0 => "Не найдено активных устройств вывода.",
-                1 => "Найдено одно устройство. Для общего звука нужны два разных выхода.",
-                _ => $"Найдено аудиоустройств: {items.Count}. Выбери две пары наушников или других выхода."
+                0 => "devices-none",
+                1 => "devices-one",
+                _ => "devices-found"
             };
-            DetailText.Text = items.Count == 0 ? "Подключи наушники или Bluetooth-донгл и обнови список." : string.Empty;
+            _detailKey = items.Count == 0 ? "connect-devices" : "empty";
+            _detailExtra = items.Count > 1 ? items.Count.ToString() : null;
         }
         catch (Exception ex)
         {
-            StatusText.Text = "Не удалось прочитать список аудиоустройств.";
-            DetailText.Text = ex.Message;
+            _statusKey = "read-error";
+            _detailKey = "extra";
+            _detailExtra = ex.Message;
         }
         finally
         {
@@ -74,6 +124,7 @@ public partial class MainWindow : Window
         }
 
         UpdateControls();
+        RenderStatus();
     }
 
     private void UpdateControls()
@@ -90,8 +141,12 @@ public partial class MainWindow : Window
         RefreshButton.IsEnabled = enabled;
         StartButton.IsEnabled = _isRunning || (source is not null && validPair);
         TestButton.IsEnabled = !_isRunning && (first is not null || second is not null);
-        StartButton.Content = _isRunning ? "■   Остановить звук" : "▶   Запустить общий звук";
-        PairCountText.Text = validPair ? "2 ИЗ 2 ВЫБРАНО" : first is not null || second is not null ? "1 ИЗ 2 ВЫБРАНО" : "0 ИЗ 2 ВЫБРАНО";
+        StartButton.Content = _isRunning
+            ? Tx("■   Остановить звук", "■   Stop audio")
+            : Tx("▶   Запустить общий звук", "▶   Start shared audio");
+        PairCountText.Text = validPair ? Tx("2 ИЗ 2 ВЫБРАНО", "2 OF 2 SELECTED")
+            : first is not null || second is not null ? Tx("1 ИЗ 2 ВЫБРАНО", "1 OF 2 SELECTED")
+            : Tx("0 ИЗ 2 ВЫБРАНО", "0 OF 2 SELECTED");
 
         RouteStateA.Text = RouteLabel(first, source);
         RouteStateB.Text = RouteLabel(second, source);
@@ -101,10 +156,10 @@ public partial class MainWindow : Window
         VolumeBText.Text = second is null ? "—" : second.Id == source?.Id ? "Windows" : $"{(int)VolumeB.Value}%";
     }
 
-    private static string RouteLabel(AudioEndpoint? output, AudioEndpoint? source)
+    private string RouteLabel(AudioEndpoint? output, AudioEndpoint? source)
     {
-        if (output is null) return "НЕ ВЫБРАНО";
-        return output.Id == source?.Id ? "ПРЯМОЙ СИГНАЛ WINDOWS" : "КОПИЯ ПОТОКА";
+        if (output is null) return Tx("НЕ ВЫБРАНО", "NOT SELECTED");
+        return output.Id == source?.Id ? Tx("ПРЯМОЙ СИГНАЛ WINDOWS", "DIRECT WINDOWS AUDIO") : Tx("КОПИЯ ПОТОКА", "STREAM COPY");
     }
 
     private void Selection_Changed(object sender, SelectionChangedEventArgs e)
@@ -113,9 +168,13 @@ public partial class MainWindow : Window
         UpdateControls();
         var source = SourceCombo.SelectedItem as AudioEndpoint;
         SourceHint.Text = source is null
-            ? "Сначала подключи устройство вывода."
-            : $"Звук будет захвачен с устройства «{source.Name}». Если YouTube играет через другой выход, измени его в микшере громкости Windows.";
+            ? Tx("Сначала подключи устройство вывода.", "Connect an output device first.")
+            : SourceHintFor(source);
     }
+
+    private string SourceHintFor(AudioEndpoint source) => _english
+        ? $"Audio will be captured from '{source.Name}'. If YouTube uses another output, change it in the Windows volume mixer."
+        : $"Звук будет захвачен с устройства «{source.Name}». Если YouTube играет через другой выход, измени его в микшере громкости Windows.";
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e) => RefreshDevices();
 
@@ -136,22 +195,24 @@ public partial class MainWindow : Window
 
         try
         {
-            _router.Start(source.Id, first, second, (float)(VolumeA.Value / 100), (float)(VolumeB.Value / 100));
+            _router.Start(source.Id, first, second, (float)(VolumeA.Value / 100), (float)(VolumeB.Value / 100), _english);
             _isRunning = true;
-            StatusText.Text = "Общий звук передаётся на выбранные устройства.";
-            DetailText.Text = source.Id == first.Id || source.Id == second.Id
-                ? "Источник звучит напрямую; второе устройство получает синхронную копию."
-                : "Исходный системный выход продолжает звучать параллельно.";
-            SetStatus(true, "ТРАНСЛЯЦИЯ");
+            _statusKey = "streaming";
+            _detailKey = source.Id == first.Id || source.Id == second.Id ? "source-direct" : "source-parallel";
+            _detailExtra = null;
+            SetStatus(true, "streaming");
+            RenderStatus();
             UpdateControls();
             _diagnosticsTimer.Start();
         }
         catch (Exception ex)
         {
             StopRouter();
-            StatusText.Text = "Не удалось запустить аудиомаршрут.";
-            DetailText.Text = ex.Message;
-            SetStatus(false, "ОШИБКА");
+            _statusKey = "start-error";
+            _detailKey = "extra";
+            _detailExtra = ex.Message;
+            SetStatus(false, "error");
+            RenderStatus();
         }
     }
 
@@ -160,9 +221,11 @@ public partial class MainWindow : Window
         _router.Stop();
         _diagnosticsTimer.Stop();
         _isRunning = false;
-        SetStatus(false, "ОСТАНОВЛЕНО");
-        StatusText.Text = "Аудиомаршрут остановлен.";
-        DetailText.Text = string.Empty;
+        SetStatus(false, "stopped");
+        _statusKey = "stopped";
+        _detailKey = "empty";
+        _detailExtra = null;
+        RenderStatus();
         UpdateControls();
     }
 
@@ -179,20 +242,22 @@ public partial class MainWindow : Window
         .ToArray();
         if (outputs.Length == 0) return;
         TestButton.IsEnabled = false;
-        StatusText.Text = outputs.Length == 1 ? "Короткий тестовый сигнал на выбранном выходе…" : "Короткий тестовый сигнал на обоих выходах…";
-        DetailText.Text = "Уровень сигнала низкий; длительность около двух секунд.";
+        _statusKey = outputs.Length == 1 ? "test-start-one" : "test-start-both";
+        _detailKey = "test-hint";
+        RenderStatus();
         try
         {
             await AudioRouter.PlayTestToneAsync(outputs.Select(x => (x.Item1.Id, x.Item2)).ToArray());
-            StatusText.Text = "Проверка завершена.";
-            DetailText.Text = outputs.Length == 1
-                ? "Тестовый сигнал воспроизведён на выбранном устройстве."
-                : "Если сигнал был слышен в обеих парах, устройства готовы.";
+            _statusKey = "test-done";
+            _detailKey = outputs.Length == 1 ? "test-done-one" : "test-done-both";
+            RenderStatus();
         }
         catch (Exception ex)
         {
-            StatusText.Text = "Тестовый сигнал не удалось воспроизвести.";
-            DetailText.Text = ex.Message;
+            _statusKey = "test-error";
+            _detailKey = "extra";
+            _detailExtra = ex.Message;
+            RenderStatus();
         }
         finally
         {
@@ -214,11 +279,50 @@ public partial class MainWindow : Window
         _router.SetVolume((OutputBCombo.SelectedItem as AudioEndpoint)?.Id, (float)(VolumeB.Value / 100));
     }
 
-    private void SetStatus(bool active, string text)
+    private void SetStatus(bool active, string key)
     {
-        StatusBadge.Text = text;
+        _badgeKey = key;
+        StatusBadge.Text = key switch
+        {
+            "streaming" => Tx("ТРАНСЛЯЦИЯ", "STREAMING"),
+            "error" => Tx("ОШИБКА", "ERROR"),
+            _ => Tx("ОСТАНОВЛЕНО", "STOPPED")
+        };
         StatusBadge.Foreground = active ? Brushes.DarkGreen : Brushes.SlateGray;
         StatusDot.Fill = active ? new SolidColorBrush(Color.FromRgb(19, 127, 117)) : new SolidColorBrush(Color.FromRgb(147, 161, 159));
+    }
+
+    private void RenderStatus()
+    {
+        StatusText.Text = _statusKey switch
+        {
+            "devices-none" => Tx("Не найдено активных устройств вывода.", "No active output devices found."),
+            "devices-one" => Tx("Найдено одно устройство. Для общего звука нужны два разных выхода.", "One device found. Two different outputs are required."),
+            "devices-found" => Tx($"Найдено аудиоустройств: {_detailExtra}. Выбери два выхода.", $"Audio devices found: {_detailExtra}. Select two outputs."),
+            "read-error" => Tx("Не удалось прочитать список аудиоустройств.", "Could not read the audio device list."),
+            "streaming" => Tx("Общий звук передаётся на выбранные устройства.", "Audio is streaming to the selected devices."),
+            "stopped" => Tx("Аудиомаршрут остановлен.", "Audio routing is stopped."),
+            "start-error" => Tx("Не удалось запустить аудиомаршрут.", "Could not start audio routing."),
+            "test-start-one" => Tx("Короткий тестовый сигнал на выбранном выходе…", "Playing a short test tone on the selected output…"),
+            "test-start-both" => Tx("Короткий тестовый сигнал на обоих выходах…", "Playing a short test tone on both outputs…"),
+            "test-done" => Tx("Проверка завершена.", "Test complete."),
+            "test-error" => Tx("Тестовый сигнал не удалось воспроизвести.", "Could not play the test tone."),
+            _ => string.Empty
+        };
+
+        DetailText.Text = _detailKey switch
+        {
+            "connect-devices" => Tx("Подключи наушники или Bluetooth-донгл и обнови список.", "Connect headphones or a Bluetooth adapter, then refresh the list."),
+            "source-direct" => Tx("Источник звучит напрямую; второе устройство получает копию.", "The source plays directly; the second device receives a copy."),
+            "source-parallel" => Tx("Исходный системный выход продолжает звучать параллельно.", "The original system output continues playing in parallel."),
+            "test-hint" => Tx("Низкий уровень сигнала; длительность около двух секунд.", "Low-level tone; duration is about two seconds."),
+            "test-done-one" => Tx("Сигнал воспроизведён на выбранном устройстве.", "The tone played on the selected device."),
+            "test-done-both" => Tx("Если сигнал был слышен в обеих парах, устройства готовы.", "If you heard the tone in both pairs, the devices are ready."),
+            "extra" => _detailExtra ?? string.Empty,
+            _ => string.Empty
+        };
+
+        if (!_isRunning && _badgeKey == "error") SetStatus(false, "error");
     }
 
     protected override void OnClosed(EventArgs e)
@@ -255,10 +359,13 @@ internal sealed class AudioRouter : IDisposable
         return endpoints;
     }
 
-    public void Start(string sourceId, AudioEndpoint first, AudioEndpoint second, float volumeA, float volumeB)
+    public void Start(string sourceId, AudioEndpoint first, AudioEndpoint second, float volumeA, float volumeB, bool english)
     {
         Stop();
-        if (first.Id == second.Id) throw new InvalidOperationException("Для двух слушателей выбери два разных устройства.");
+        if (first.Id == second.Id)
+            throw new InvalidOperationException(english
+                ? "Select two different devices for the listeners."
+                : "Для двух слушателей выбери два разных устройства.");
 
         _activeEnumerator = new MMDeviceEnumerator();
         _routeError = null;
@@ -317,7 +424,7 @@ internal sealed class AudioRouter : IDisposable
         if (route is not null) route.Player.Volume = Math.Clamp(volume, 0, 1);
     }
 
-    public string GetDiagnostics()
+    public string GetDiagnostics(bool english)
     {
         var lastTicks = Interlocked.Read(ref _lastPacketTicks);
         var packetIsFresh = lastTicks != 0 && DateTime.UtcNow - new DateTime(lastTicks, DateTimeKind.Utc) < TimeSpan.FromMilliseconds(500);
@@ -328,12 +435,16 @@ internal sealed class AudioRouter : IDisposable
             var peak = 0f;
             try { peak = route.Device.AudioMeterInformation.MasterPeakValue; } catch { }
             var bufferedMs = route.Buffer.BufferedBytes * 1000d / route.Buffer.WaveFormat.AverageBytesPerSecond;
-            return $"выход {index + 1} {peak:P0}/{bufferedMs:F0} мс";
+            return english
+                ? $"Output {index + 1} {peak:P0}/{bufferedMs:F0} ms"
+                : $"выход {index + 1} {peak:P0}/{bufferedMs:F0} мс";
         });
         var error = Volatile.Read(ref _routeError);
         return error is not null
-            ? $"Ошибка потока: {error}"
-            : $"Вход {inputPeak:P0} · пакеты {packetCount:N0} · {string.Join(" · ", rates)}";
+            ? $"{(english ? "Stream error" : "Ошибка потока")}: {error}"
+            : english
+                ? $"Input {inputPeak:P0} · packets {packetCount:N0} · {string.Join(" · ", rates)}"
+                : $"Вход {inputPeak:P0} · пакеты {packetCount:N0} · {string.Join(" · ", rates)}";
     }
 
     private static float MeasurePeak(byte[] buffer, int bytesRecorded, WaveFormat format)
