@@ -38,6 +38,14 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ToolTipService.ShowDuration" Value="3000"/>
         </Style>
+        <Style x:Key="LanguageButton" TargetType="Button">
+            <Setter Property="Width" Value="38"/><Setter Property="Height" Value="27"/>
+            <Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#435255"/>
+            <Setter Property="BorderBrush" Value="#DDE4E1"/><Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="10"/><Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Height" Value="48"/><Setter Property="Padding" Value="20,0"/>
             <Setter Property="Background" Value="#172326"/><Setter Property="Foreground" Value="White"/>
@@ -70,25 +78,25 @@
                     <StackPanel VerticalAlignment="Center"><TextBlock Text="SONORA" Foreground="White" FontSize="14" FontWeight="Bold"/><TextBlock Text="AUDIO ROUTER" Foreground="#8C9A9B" FontSize="9" Margin="0,2,0,0"/></StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="14,54,14,0">
-                    <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО" Foreground="#7D8A8C" FontSize="9" FontWeight="SemiBold" Margin="10,0,0,13"/>
+                    <TextBlock x:Name="WorkspaceLabel" Text="РАБОЧЕЕ ПРОСТРАНСТВО" Foreground="#7D8A8C" FontSize="9" FontWeight="SemiBold" Margin="10,0,0,13"/>
                     <Border Background="#29383A" CornerRadius="5" Padding="10,11">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                             <TextBlock Text="◉" Foreground="{StaticResource Accent}" FontSize="16" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" Text="Маршрутизация" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="RoutingLabel" Grid.Column="1" Text="Маршрутизация" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
-                    <TextBlock Text="СЕССИЯ" Foreground="#7D8A8C" FontSize="9" FontWeight="SemiBold" Margin="10,33,0,13"/>
+                    <TextBlock x:Name="SessionLabel" Text="СЕССИЯ" Foreground="#7D8A8C" FontSize="9" FontWeight="SemiBold" Margin="10,33,0,13"/>
                     <Border Padding="10,10" BorderBrush="#344346" BorderThickness="1" CornerRadius="5">
                         <StackPanel>
-                            <TextBlock Text="Локальное аудио" Foreground="#E8EEEB" FontSize="11"/>
-                            <TextBlock Text="Только на этом компьютере" Foreground="#8C9A9B" FontSize="10" Margin="0,5,0,0"/>
+                            <TextBlock x:Name="LocalAudioLabel" Text="Локальное аудио" Foreground="#E8EEEB" FontSize="11"/>
+                            <TextBlock x:Name="LocalOnlyLabel" Text="Только на этом компьютере" Foreground="#8C9A9B" FontSize="10" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Margin="24,0,18,24">
                     <Border Height="1" Background="#354346" Margin="0,0,0,15"/>
-                    <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{StaticResource Accent}" Margin="0,0,8,0"/><TextBlock Text="СИСТЕМА ГОТОВА" Foreground="#C2CECA" FontSize="9" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
-                    <TextBlock Text="v0.1.0  ·  Windows WASAPI" Foreground="#718082" FontSize="9" Margin="15,8,0,0"/>
+                    <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{StaticResource Accent}" Margin="0,0,8,0"/><TextBlock x:Name="ReadyLabel" Text="СИСТЕМА ГОТОВА" Foreground="#C2CECA" FontSize="9" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
+                    <TextBlock x:Name="VersionLabel" Text="v0.2.0  ·  Windows WASAPI" Foreground="#718082" FontSize="9" Margin="15,8,0,0"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -96,25 +104,31 @@
         <Grid Grid.Column="1" Margin="42,32,44,30">
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
             <Grid>
-                <StackPanel><TextBlock Text="АУДИОСЕССИЯ  /  01" Style="{StaticResource SmallLabel}"/><TextBlock Text="Два устройства. Один звук." FontSize="28" FontWeight="SemiBold" Margin="0,8,0,0"/><TextBlock Text="Передавай системный звук сразу на две пары наушников." FontSize="13" Foreground="{StaticResource Muted}" Margin="0,6,0,0"/></StackPanel>
-                <Border HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="#DDE4E1" BorderThickness="1" CornerRadius="14" Padding="11,6" Margin="0,7,0,0" Background="#FAFBFA">
-                    <StackPanel Orientation="Horizontal"><Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#93A19F" Margin="0,0,7,0"/><TextBlock x:Name="StatusBadge" Text="ОСТАНОВЛЕНО" FontSize="9" FontWeight="Bold" Foreground="#617072" VerticalAlignment="Center"/></StackPanel>
-                </Border>
+                <StackPanel><TextBlock x:Name="HeaderEyebrow" Text="АУДИОСЕССИЯ  /  01" Style="{StaticResource SmallLabel}"/><TextBlock x:Name="HeaderTitle" Text="Два устройства. Один звук." FontSize="28" FontWeight="SemiBold" Margin="0,8,0,0"/><TextBlock x:Name="HeaderSubtitle" Text="Передавай системный звук сразу на две пары наушников." FontSize="13" Foreground="{StaticResource Muted}" Margin="0,6,0,0"/></StackPanel>
+                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="RussianButton" Content="RU" Style="{StaticResource LanguageButton}" Click="LanguageButton_Click" ToolTip="Русский"/>
+                        <Button x:Name="EnglishButton" Content="EN" Style="{StaticResource LanguageButton}" Margin="0" Click="LanguageButton_Click" ToolTip="English"/>
+                    </StackPanel>
+                    <Border HorizontalAlignment="Right" BorderBrush="#DDE4E1" BorderThickness="1" CornerRadius="14" Padding="11,6" Margin="0,7,0,0" Background="#FAFBFA">
+                        <StackPanel Orientation="Horizontal"><Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#93A19F" Margin="0,0,7,0"/><TextBlock x:Name="StatusBadge" Text="ОСТАНОВЛЕНО" FontSize="9" FontWeight="Bold" Foreground="#617072" VerticalAlignment="Center"/></StackPanel>
+                    </Border>
+                </StackPanel>
             </Grid>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,28,0,0">
                 <StackPanel>
-                    <Grid Margin="0,0,0,10"><TextBlock Text="01  ИСТОЧНИК ЗВУКА" Style="{StaticResource SmallLabel}"/><Button x:Name="RefreshButton" Content="↻" Style="{StaticResource IconButton}" Width="34" Height="34" HorizontalAlignment="Right" ToolTip="Обновить список устройств" Click="RefreshButton_Click"/></Grid>
+                    <Grid Margin="0,0,0,10"><TextBlock x:Name="SourceSectionLabel" Text="01  ИСТОЧНИК ЗВУКА" Style="{StaticResource SmallLabel}"/><Button x:Name="RefreshButton" Content="↻" Style="{StaticResource IconButton}" Width="34" Height="34" HorizontalAlignment="Right" ToolTip="Обновить список устройств" Click="RefreshButton_Click"/></Grid>
                     <Grid Margin="0,0,0,7"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <ComboBox x:Name="SourceCombo" Style="{StaticResource EndpointCombo}" DisplayMemberPath="Name" SelectionChanged="Selection_Changed"/>
                     </Grid>
                     <TextBlock x:Name="SourceHint" Text="Будет захвачен звук, который Windows воспроизводит через выбранное устройство." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="1,3,0,0"/>
 
-                    <Grid Margin="0,30,0,11"><TextBlock Text="02  УСТРОЙСТВА ВЫВОДА" Style="{StaticResource SmallLabel}"/><TextBlock x:Name="PairCountText" Text="0 ИЗ 2 ВЫБРАНО" FontSize="9" FontWeight="Bold" Foreground="{StaticResource Teal}" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+                    <Grid Margin="0,30,0,11"><TextBlock x:Name="OutputsSectionLabel" Text="02  УСТРОЙСТВА ВЫВОДА" Style="{StaticResource SmallLabel}"/><TextBlock x:Name="PairCountText" Text="0 ИЗ 2 ВЫБРАНО" FontSize="9" FontWeight="Bold" Foreground="{StaticResource Teal}" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
                     <Border Background="White" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="6" Padding="18,16" Margin="0,0,0,10">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="38"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Border Width="28" Height="28" Background="#EAF5F0" CornerRadius="5" VerticalAlignment="Top"><TextBlock Text="01" FontSize="10" FontWeight="Bold" Foreground="#137F75" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                            <StackPanel Grid.Column="1"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="СЛУШАТЕЛЬ 1" Style="{StaticResource SmallLabel}" VerticalAlignment="Center"/><TextBlock x:Name="RouteStateA" Grid.Column="1" Text="НЕ ВЫБРАНО" FontSize="9" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/></Grid>
+                            <StackPanel Grid.Column="1"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="ListenerALabel" Text="СЛУШАТЕЛЬ 1" Style="{StaticResource SmallLabel}" VerticalAlignment="Center"/><TextBlock x:Name="RouteStateA" Grid.Column="1" Text="НЕ ВЫБРАНО" FontSize="9" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/></Grid>
                                 <ComboBox x:Name="OutputACombo" Style="{StaticResource EndpointCombo}" DisplayMemberPath="Name" Margin="0,9,0,0" SelectionChanged="Selection_Changed"/>
                                 <Grid Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="45"/></Grid.ColumnDefinitions><Slider x:Name="VolumeA" Minimum="0" Maximum="100" Value="80" VerticalAlignment="Center" ValueChanged="VolumeA_Changed"/><TextBlock x:Name="VolumeAText" Grid.Column="1" Text="80%" FontSize="10" Foreground="{StaticResource Muted}" VerticalAlignment="Center" HorizontalAlignment="Right"/></Grid>
                             </StackPanel>
@@ -123,7 +137,7 @@
                     <Border Background="White" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="6" Padding="18,16">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="38"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Border Width="28" Height="28" Background="#F1F0FA" CornerRadius="5" VerticalAlignment="Top"><TextBlock Text="02" FontSize="10" FontWeight="Bold" Foreground="#6256A6" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                            <StackPanel Grid.Column="1"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="СЛУШАТЕЛЬ 2" Style="{StaticResource SmallLabel}" VerticalAlignment="Center"/><TextBlock x:Name="RouteStateB" Grid.Column="1" Text="НЕ ВЫБРАНО" FontSize="9" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/></Grid>
+                            <StackPanel Grid.Column="1"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="ListenerBLabel" Text="СЛУШАТЕЛЬ 2" Style="{StaticResource SmallLabel}" VerticalAlignment="Center"/><TextBlock x:Name="RouteStateB" Grid.Column="1" Text="НЕ ВЫБРАНО" FontSize="9" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/></Grid>
                                 <ComboBox x:Name="OutputBCombo" Style="{StaticResource EndpointCombo}" Margin="0,9,0,0" DisplayMemberPath="Name" SelectionChanged="Selection_Changed"/>
                                 <Grid Margin="0,10,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="45"/></Grid.ColumnDefinitions><Slider x:Name="VolumeB" Minimum="0" Maximum="100" Value="80" VerticalAlignment="Center" ValueChanged="VolumeB_Changed"/><TextBlock x:Name="VolumeBText" Grid.Column="1" Text="80%" FontSize="10" Foreground="{StaticResource Muted}" VerticalAlignment="Center" HorizontalAlignment="Right"/></Grid>
                             </StackPanel>
@@ -131,7 +145,7 @@
                     </Border>
 
                     <Border Background="#EAF0EE" CornerRadius="5" Padding="13,11" Margin="0,16,0,0">
-                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="i" FontSize="13" FontWeight="Bold" Foreground="{StaticResource Teal}" VerticalAlignment="Top"/><TextBlock Grid.Column="1" Text="Bluetooth-наушники могут иметь разную аппаратную задержку. Приложение передаёт общий поток, но не может гарантировать идеальное совпадение сигнала между разными моделями." FontSize="10.5" Foreground="#536365" TextWrapping="Wrap" LineHeight="16"/></Grid>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="i" FontSize="13" FontWeight="Bold" Foreground="{StaticResource Teal}" VerticalAlignment="Top"/><TextBlock x:Name="LatencyNote" Grid.Column="1" Text="Bluetooth-наушники могут иметь разную аппаратную задержку. Приложение передаёт общий поток, но не может гарантировать идеальное совпадение сигнала между разными моделями." FontSize="10.5" Foreground="#536365" TextWrapping="Wrap" LineHeight="16"/></Grid>
                     </Border>
                 </StackPanel>
             </ScrollViewer>
